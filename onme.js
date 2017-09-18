@@ -5,7 +5,13 @@
 (function($){
     $.fn.onme = function(options){
         var defaults = {
-            
+            text:{
+                color:'#333',
+                active:{
+                    color:'#fff'
+                }
+            }
+
         };
         var settings = $.extend(defaults,options);
         
@@ -54,9 +60,9 @@
             $(window).scroll(function(){
                 index = positions.findIndex(function(e,i,a){
                     return e+diffs[i]-1 >= $(this).scrollTop();
-                })
+                });
                 // console.log(index,positions[index],$(this).scrollTop());
-                self.log(index,positions[index],$(this).scrollTop(),'diffs:',diffs,'pos:',positions);
+                // self.log(index,positions[index],$(this).scrollTop(),'diffs:',diffs,'pos:',positions);
                 
                 $(items).eq(index).addClass('active');
                 $(items).eq(index).siblings('.onme.nav-item').removeClass('active');
@@ -71,15 +77,17 @@
             });
             
             $('body').append(`<style type="text/css">
+            .nav-item{transition:color .5s;color:${text.color};}
             .nav-item.active {
-                color: #fff;
+                color: ${text.active.color};
+                transition:color .5s;
             }
             </style>`);
-        }
+        };
         
         this.goTo = function(topx){
             $('html,body').stop().animate({scrollTop:topx}, 500, 'swing');
-        }
+        };
         
         this.log = function(...opt){
             var str = '';
@@ -87,7 +95,7 @@
                 str += typeof i !== 'undefined'?' '+i.toString():'';
             }
             $('#log').text(str);
-        }
+        };
         
         this.init();
         
