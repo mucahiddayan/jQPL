@@ -1,6 +1,6 @@
 /**
- * @author Mücahid Dayan
- */
+* @author Mücahid Dayan
+*/
 
 (function($){
     $.fn.onme = function(options){
@@ -10,53 +10,84 @@
         var settings = $.extend(defaults,options);
         
         var self = this,
-            positions = [],
-            items = [],
-            heights = [],
-            nav = '<ul class="onme nav-items">';
+        positions = [],
+        items = [],
+        heights = [],
+        diffs = [],
+        counter = 0,
+        nav = '<div class="onme-wrapper"><ul class="onme nav-items">';
         
         this.init = function(){
             $.each(self,function(index){
+                if(!$(this).text().length){
+                    return;
+                }
                 var offsetTop = $(this).offset().top;
-                nav += `<li class="onme nav-item" id="${index}">${$(this).text()}</li>`;
+                nav += `<li class="onme nav-item" id="${counter}">${$(this).text()}</li>`;
                 positions.push(offsetTop);
+                counter++;
             });
-
-            nav += '</ul>';
-
-            $(nav).prependTo('body').css({
-                position : 'fixed',
-                right    : 10,
-                top      : 100,
-                zIndex   : 10,
-                padding  : 10,
-                backgroundColor : 'rgba(0,0,0,.5)'
-            });
-
+            
+            nav += '</ul><span id="log"></span></div>';
+            
+            if(!$('body').find('.nav-items').length){
+                $(nav).prependTo('body').css({
+                    position : 'fixed',
+                    right    : 10,
+                    top      : 100,
+                    zIndex   : 10,
+                    padding  : 10,
+                    backgroundColor : 'rgba(0,0,0,.5)'
+                });
+            }
+            
             items = $('.onme.nav-item');
+            
+            $.each(items,function(i,v){
+                if(i == items.length-1){
+                    return;
+                }
+                diffs.push(positions[i+1]-positions[i]);
+            });
             console.log(items);
-
+            
             $(window).scroll(function(){
-                index = positions.findIndex(function(e){
-                    return e >= $(this).scrollTop();
+                index = positions.findIndex(function(e,i,a){
+                    return e+diffs[i]-1 >= $(this).scrollTop();
                 })
-                // console.log(index,positions);
+                // console.log(index,positions[index],$(this).scrollTop());
+                self.log(index,positions[index],$(this).scrollTop(),'diffs:',diffs,'pos:',positions);
+                
                 $(items).eq(index).addClass('active');
                 $(items).eq(index).siblings('.onme.nav-item').removeClass('active');
                 
+                
             });
-
+            
             $(items).on('click',function(){
                 var offsetTop = positions[this.id];
                 console.log(offsetTop);
                 self.goTo(offsetTop);
             });
+            
+            $('body').append(`<style type="text/css">
+            .nav-item.active {
+                color: #fff;
+            }
+            </style>`);
         }
-
+        
         this.goTo = function(topx){
             $('html,body').stop().animate({scrollTop:topx}, 500, 'swing');
         }
         
+        this.log = function(...opt){
+            var str = '';
+            for(let i of opt){
+                str += typeof i !== 'undefined'?' '+i.toString():'';
+            }
+            $('#log').text(str);
+        }
         
         this.init();
         
