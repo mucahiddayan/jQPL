@@ -9,7 +9,11 @@
                 color:'#333',
                 active:{
                     color:'#fff'
-                }
+                },
+                transition:.5
+            },
+            label:{
+                selector:'id'
             }
 
         };
@@ -29,7 +33,19 @@
                     return;
                 }
                 var offsetTop = $(this).offset().top;
-                nav += `<li class="onme nav-item" id="${counter}">${$(this).text()}</li>`;
+                var label='';
+                if(settings.label.selector.toLowerCase() == 'id'){
+                    label = this.id;
+                }
+                else if(/data/i.test(settings.label.selector)){
+                    var data = settings.label.split(/\-(.+)/);
+                    label = this.dataset[data[1]];
+                }
+                else{
+                    label = $(this).find(settings.label.selector).text();
+                }
+                console.log(settings.label.selector,label);
+                nav += `<li class="onme nav-item" id="${counter}">${label}</li>`;
                 positions.push(offsetTop);
                 counter++;
             });
@@ -77,10 +93,10 @@
             });
             
             $('body').append(`<style type="text/css">
-            .nav-item{transition:color .5s;color:${text.color};}
+            .nav-item{transition:color ${settings.text.transition}s;color:${settings.text.color};}
             .nav-item.active {
-                color: ${text.active.color};
-                transition:color .5s;
+                color: ${settings.text.active.color};
+                transition:color ${settings.text.transition}s;
             }
             </style>`);
         };
