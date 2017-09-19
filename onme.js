@@ -14,9 +14,19 @@
             },
             label:{
                 selector:'id'
+            },
+            box:{
+                css:{
+                    position : 'fixed',
+                    right    : 10,
+                    top      : 100,
+                    zIndex   : 10,
+                    padding  : 10,
+                    backgroundColor : 'rgba(0,0,0,.5)'
+                }
             }
-
         };
+        
         var settings = $.extend(defaults,options);
         
         var self = this,
@@ -25,6 +35,7 @@
         heights = [],
         diffs = [],
         counter = 0,
+        wInner = window.innerHeight,
         nav = '<div class="onme-wrapper"><ul class="onme nav-items">';
         
         this.init = function(){
@@ -53,14 +64,7 @@
             nav += '</ul><span id="log"></span></div>';
             
             if(!$('body').find('.nav-items').length){
-                $(nav).prependTo('body').css({
-                    position : 'fixed',
-                    right    : 10,
-                    top      : 100,
-                    zIndex   : 10,
-                    padding  : 10,
-                    backgroundColor : 'rgba(0,0,0,.5)'
-                });
+                $(nav).prependTo('body').css(settings.box.css);
             }
             
             items = $('.onme.nav-item');
@@ -74,14 +78,19 @@
             console.log(items);
             
             $(window).scroll(function(){
-                index = positions.findIndex(function(e,i,a){
+                /* index = positions.findIndex(function(e,i,a){
                     return e+diffs[i]-1 >= $(this).scrollTop();
                 });
                 // console.log(index,positions[index],$(this).scrollTop());
-                // self.log(index,positions[index],$(this).scrollTop(),'diffs:',diffs,'pos:',positions);
+                // self.log(index,positions[index],$(this).scrollTop(),'diffs:',diffs,'pos:',positions); */
                 
-                $(items).eq(index).addClass('active');
-                $(items).eq(index).siblings('.onme.nav-item').removeClass('active');
+                let tmp  = self.getOnScreen(window.scrollY),
+                onScreen = tmp.removed,
+                stay     = tmp.stay;
+                self.activate(onScreen,stay);
+                
+                /* $(items).eq(index).addClass('active');
+                $(items).eq(index).siblings('.onme.nav-item').removeClass('active'); */
                 
                 
             });
@@ -100,7 +109,44 @@
             }
             </style>`);
         };
+
+        this.activate = function(els,deac){
+            console.log(els,deac);
+            $.each(els,function(){$(this).addClass('active')});
+            $.each(deac,function(){$(this).removeClass('active')});
+        }
         
+        this.getOnScreen = function(scrollY){
+            let temp = [].slice.call(items);        
+            let onScreen = positions.filter(e=>{
+                return  e >= scrollY && e <= scrollY + wInner;
+            });
+            let first = positions.findIndex(e=> e == self.min(onScreen));
+            // let last = positions.findIndex(e=> e == self.max(onScreen));
+            first = first == -1?items.length-1:first;
+            console.group('log');
+            console.log('onscreen',onScreen);
+            console.log('onscreen length',onScreen.length);
+            console.log('min of onscreen',self.min(onScreen));
+            console.log('first',first);
+            // console.log('last',last);
+            console.log('removed',temp.splice(first,onScreen.length), typeof temp.splice(first,onScreen.length));
+            console.log('temp',temp,typeof temp);
+            console.groupEnd('log');
+            return { 
+                removed: temp.splice(first,onScreen.length),
+                stay   : temp
+            };        
+        }
+        
+        this.min = function(arr){
+            return arr.sort((a,b)=>a>b)[0];
+        }
+
+        this.max = function(arr){
+            return arr.sort((a,b)=>a<b)[0];
+        }
+
         this.goTo = function(topx){
             $('html,body').stop().animate({scrollTop:topx}, 500, 'swing');
         };
