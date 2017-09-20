@@ -1,16 +1,15 @@
 /**
- * @author Mücahid Dayan
- * jQuery plugin - Creates a Navbar on the given position
- * and highlights current elements on scroll.
- * 
- * usage : $('CSS_SELECTOR').onme(options?);
- */
+* @author Mücahid Dayan
+* jQuery plugin - Creates a Navbar on the given position
+* and highlights current elements on scroll.
+* 
+* usage : $('CSS_SELECTOR').onme(options?);
+*/
 
 addJQuery();
 (function($){
     $.fn.onme = function(options){
         var defaults = {
-            container : 'article',  // CSS_SELECTORs can be passed
             label:{
                 selector:'id',      // CSS_SELECTORs can be passed
                 color:'#333',
@@ -25,7 +24,7 @@ addJQuery();
                     position : 'fixed', // ---------------------
                     right    : 10,      //                      -
                     top      : 100,     //                       ------- \ 
-                                        //                                > CSS_SELECTORs can be passed                    
+                    //                                > CSS_PROPERTIES can be passed                    
                     zIndex   : 10,      //                       ------- /
                     padding  : 10,      //                      -
                     backgroundColor : 'rgba(0,0,0,.5)' //-------
@@ -34,7 +33,7 @@ addJQuery();
         };
         
         // default parametes are merged with given options
-        var settings = $.extend(defaults,options);
+        var settings = $.extend(true,defaults,options);
         
         // this assigned to self to use in 
         // anonym functions
@@ -42,65 +41,41 @@ addJQuery();
         positions = [],  // an array for positions of the containers
         items = [],      // an array for created nav items
         heights = [],    // an array for height of the containers
-        diffs = [],      // not used
+        // diffs = [],      // not used
         counter = 0,     // int value to count items , index could not be used , because it is not created nav item for every container
-        wInner = window.innerHeight,  // window innerheight
-        nav = '<div class="onme-wrapper"><ul class="onme nav-items">'; // nav string to add to begin of the body
+        wInner = window.innerHeight;  // window innerheight
         
+        
+             
+
         /**
-         * initialize function
-         */
+        * initialize function
+        */
         this.init = function(){
-            $.each(self,function(index){
-                if(!$(this).text().length){
-                    return;
-                }
-                var offsetTop = $(this).offset().top;
-                var label='';
-                if(settings.label.selector.toLowerCase() == 'id'){
-                    label = this.id;
-                }
-                else if(/data/i.test(settings.label.selector)){
-                    var data = settings.label.split(/\-(.+)/);
-                    label = this.dataset[data[1]];
-                }else if(settings.label.selector.replace(/\s/,'') == ''){
-                    label = this.id;
-                }else if(/^self$/.test(settings.label.selector)){
-                    label = this.innerText;
-                }
-                else{
-                    label = $(this).find(settings.label.selector).text();
-                }
-                console.log(settings.label.selector,label);
-                nav += `<li class="onme nav-item" id="${counter}">${label}</li>`;
-                positions.push(offsetTop);
-                counter++;
-            });
-            
-            nav += '</ul><span id="log"></span></div>';
-            
-            if(!$('body').find('.nav-items').length){
-                $(nav).prependTo('body').css(settings.wrapper.css);
-            }
-            
-            items = $('.onme.nav-item');
-            
+            var container = self.containerBox(),
+                nav = self.navitemsbox(self);
+                items = self.addToContainer(nav);
+                // var test = self.addToContainer(nav);
+                
+            console.log(items);
             $.each(items,function(i,v){
                 if(i == items.length-1){
                     return;
                 }
-                diffs.push(positions[i+1]-positions[i]);
+                // diffs.push(positions[i+1]-positions[i]); 
             });
-            console.log(items);
+            
             
             $(window).scroll(function(){
                 let tmp  = self.getOnScreen(window.scrollY);               
                 self.activate(tmp.on,tmp.out);                
             });
-            
+
+            self.provideClick();
+
             $(items).on('click',function(){
                 var offsetTop = positions[this.id];
-                console.log(offsetTop);
+                // console.log(offsetTop);
                 self.goTo(offsetTop);
             });
             
@@ -112,18 +87,117 @@ addJQuery();
             }
             </style>`);
         };
+
+        /**
+         * returns a containerbox
+         * in which the navitemsboxes added
+         */
+        this.containerBox = function(){
+            let container = `<div class="onme-wrapper"></div>`;
+            if(!$('body').find('.onme-wrapper').length){
+                $(container).prependTo('body').css(settings.wrapper.css);
+            }
+
+            return $('.onme-wrapper');
+        }
+
+        /**
+         * creates and returns a navitemsbox
+         * @param {HTMLCollection} elements
+         */
+        this.navitemsbox = function(elements){
+            let selfSelector = $(elements).selector.replace(/[^a-zA-Z0-9]/ig,'');
+            let nav = `<ul class="onme nav-items ${selfSelector}">`; // nav string to add to begin of the body
+            $.each(elements,function(index){
+                if(!$(this).html().length){
+                    return;
+                }
+                
+                var offsetTop = $(this).offset().top;
+                var label= self.label(settings.label.selector,this);
+                
+                nav += `<li class="onme nav-item" id="${counter}">${label}</li>`;
+                positions.push(offsetTop);
+                counter++;
+            });                        
+            nav += '</ul><span id="log"></span>';
+            return {
+                str : nav,
+                uniq: selfSelector
+            };
+        }
+
+
+        this.provideClick = function(){
+            $(items).on('click',function(){
+                var offsetTop = positions[this.id];
+                // console.log(offsetTop);
+                self.goTo(offsetTop);
+            });
+        }
+
+        /**
+         * @param {Object} navitemsbox
+         *  str : HTML String
+         *  uniq: this.selector
+         */
+        this.addToContainer = function(navitemsbox){
+            if(!$('.onme-wrapper').length){
+                console.warn('Wrapper does not exist');
+                return;
+            }
+            var selector = `.nav-items.${navitemsbox.uniq} .nav-item`;
+            if(!$('.onme-wrapper').find(selector).length){
+                $(navitemsbox.str).prependTo('.onme-wrapper');
+            }            
+            return $(selector);
+        }
+
+        /**
+         * @param {HTMLCollection} inputs
+         */
+        this.updateItems = function(inputs){
+            [].slice.call(items).concat([].slice.call(inputs));            
+        }
         
         /**
          * add class 'ACTIVE' to the on screen elements
+         * @param {HTML Element[]} on
+         * @param {HTML Element[]} out
          */
         this.activate = function(on,out){
-            console.log(on,out);
+            // console.log(on,out);
             $.each(on,function(){$(this).addClass('active')});
             $.each(out,function(){$(this).removeClass('active')});
         };
+
+        /**
+         * Returns a label
+         * @param {string} input
+         * @param {HTML Element} el
+         * @returns {string} label
+         */
+        this.label = function(input,el){
+            if(input.toLowerCase() == 'id'){
+                label = el.id;
+            }
+            else if(/data/i.test(input)){
+                var data = input.split(/\-(.+)/);
+                label = el.dataset[data[1]];
+            }else if(input.replace(/\s/,'') == ''){
+                label = el.id;
+            }else if(/^self$/.test(input)){
+                label = el.innerText;
+            }
+            else{
+                label = $(el).find(input).text();
+            }
+            return label;
+        }
         
         /**
          * filters and returns the items which are currently on screen
+         * @param {number} scrollY - number to scroll
          */
         this.getOnScreen = function(scrollY){
             let temp = [].slice.call(items);        
@@ -140,6 +214,7 @@ addJQuery();
         
         /**
          * returns the min value of an array
+         * @param {number[]} arr
          */
         this.min = function(arr){
             return arr.sort((a,b)=>a>b)[0];
@@ -147,6 +222,7 @@ addJQuery();
         
         /**
          * returns the max value of an array
+         * @param {number[]} arr
          */
         this.max = function(arr){
             return arr.sort((a,b)=>a<b)[0];
@@ -154,14 +230,15 @@ addJQuery();
         
         /**
          * scrolls to given px
+         * @param {number} topx
          */
         this.goTo = function(topx){
             $('html,body').stop().animate({scrollTop:topx}, 500, 'swing');
         };
         
         /**
-         * debugging function
-         */
+        * debugging function
+        */
         this.log = function(...opt){
             var str = '';
             for(let i of opt){
@@ -171,8 +248,8 @@ addJQuery();
         };
         
         /**
-         * initialize the code
-         */
+        * initialize the code
+        */
         this.init();
         
         return this;
