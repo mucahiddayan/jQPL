@@ -10,42 +10,45 @@ addJQuery();
 (function($){
     $.fn.onme = function(options){
         var defaults = {
-            text:{
+            container : 'article',  // CSS_SELECTORs can be passed
+            label:{
+                selector:'id',      // CSS_SELECTORs can be passed
                 color:'#333',
                 active:{
                     color:'#fff'
                 },
                 transition:.5
-            },
-            label:{
-                selector:'id'
-            },
-            box:{
+            },       
+            
+            wrapper:{
                 css:{
-                    position : 'fixed',
-                    right    : 10,
-                    top      : 100,
-                    zIndex   : 10,
-                    padding  : 10,
-                    backgroundColor : 'rgba(0,0,0,.5)'
+                    position : 'fixed', // ---------------------
+                    right    : 10,      //                      -
+                    top      : 100,     //                       ------- \ 
+                                        //                                > CSS_SELECTORs can be passed                    
+                    zIndex   : 10,      //                       ------- /
+                    padding  : 10,      //                      -
+                    backgroundColor : 'rgba(0,0,0,.5)' //-------
                 }
             }
         };
         
+        // default parametes are merged with given options
         var settings = $.extend(defaults,options);
         
+        // this assigned to self to use in 
+        // anonym functions
         var self = this,
-        positions = [],
-        items = [],
-        heights = [],
-        diffs = [],
-        counter = 0,
-        wInner = window.innerHeight,
-        nav = '<div class="onme-wrapper"><ul class="onme nav-items">';
+        positions = [],  // an array for positions of the containers
+        items = [],      // an array for created nav items
+        heights = [],    // an array for height of the containers
+        diffs = [],      // not used
+        counter = 0,     // int value to count items , index could not be used , because it is not created nav item for every container
+        wInner = window.innerHeight,  // window innerheight
+        nav = '<div class="onme-wrapper"><ul class="onme nav-items">'; // nav string to add to begin of the body
         
         /**
          * initialize function
-         * 
          */
         this.init = function(){
             $.each(self,function(index){
@@ -77,7 +80,7 @@ addJQuery();
             nav += '</ul><span id="log"></span></div>';
             
             if(!$('body').find('.nav-items').length){
-                $(nav).prependTo('body').css(settings.box.css);
+                $(nav).prependTo('body').css(settings.wrapper.css);
             }
             
             items = $('.onme.nav-item');
@@ -91,19 +94,8 @@ addJQuery();
             console.log(items);
             
             $(window).scroll(function(){
-                /* index = positions.findIndex(function(e,i,a){
-                    return e+diffs[i]-1 >= $(this).scrollTop();
-                });
-                // console.log(index,positions[index],$(this).scrollTop());
-                // self.log(index,positions[index],$(this).scrollTop(),'diffs:',diffs,'pos:',positions); */
-                
                 let tmp  = self.getOnScreen(window.scrollY);               
-                self.activate(tmp.on,tmp.out);
-                
-                /* $(items).eq(index).addClass('active');
-                $(items).eq(index).siblings('.onme.nav-item').removeClass('active'); */
-                
-                
+                self.activate(tmp.on,tmp.out);                
             });
             
             $(items).on('click',function(){
@@ -113,10 +105,10 @@ addJQuery();
             });
             
             $('body').append(`<style type="text/css">
-            .nav-item{transition:color ${settings.text.transition}s;color:${settings.text.color};}
+            .nav-item{transition:color ${settings.label.transition}s;color:${settings.label.color};}
             .nav-item.active {
-                color: ${settings.text.active.color};
-                transition:color ${settings.text.transition}s;
+                color: ${settings.label.active.color};
+                transition:color ${settings.label.transition}s;
             }
             </style>`);
         };
