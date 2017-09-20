@@ -55,7 +55,7 @@ addJQuery();
                 }else if(settings.label.selector.replace(/\s/,'') == ''){
                     label = this.id;
                 }else if(/^self$/.test(settings.label.selector)){
-                    this.innerText;
+                    label = this.innerText;
                 }
                 else{
                     label = $(this).find(settings.label.selector).text();
