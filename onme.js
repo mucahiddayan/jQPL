@@ -1,6 +1,10 @@
 /**
-* @author Mücahid Dayan
-*/
+ * @author Mücahid Dayan
+ * jQuery plugin - Creates a Navbar on the given position
+ * and highlights current elements on scroll.
+ * 
+ * usage : $('CSS_SELECTOR').onme(options?);
+ */
 
 addJQuery();
 (function($){
@@ -39,6 +43,10 @@ addJQuery();
         wInner = window.innerHeight,
         nav = '<div class="onme-wrapper"><ul class="onme nav-items">';
         
+        /**
+         * initialize function
+         * 
+         */
         this.init = function(){
             $.each(self,function(index){
                 if(!$(this).text().length){
@@ -113,46 +121,55 @@ addJQuery();
             </style>`);
         };
         
+        /**
+         * add class 'ACTIVE' to the on screen elements
+         */
         this.activate = function(on,out){
             console.log(on,out);
             $.each(on,function(){$(this).addClass('active')});
             $.each(out,function(){$(this).removeClass('active')});
         };
         
+        /**
+         * filters and returns the items which are currently on screen
+         */
         this.getOnScreen = function(scrollY){
             let temp = [].slice.call(items);        
             let onScreen = positions.filter(e=>{
                 return  e >= scrollY && e <= scrollY + wInner;
             });
             let first = positions.findIndex(e=> e == self.min(onScreen));
-            first = first == -1?items.length-1:first;
-            /* console.group('log');
-            console.log('onscreen',onScreen);
-            console.log('onscreen length',onScreen.length);
-            console.log('min of onscreen',self.min(onScreen));
-            console.log('first',first);
-            // console.log('last',last);
-            console.log('removed',temp.splice(first,onScreen.length), Array.isArray(temp.splice(first,onScreen.length)));
-            console.log('temp',temp,Array.isArray(temp));
-            console.groupEnd('log'); */
+            first = first == -1?items.length-1:first;            
             return { 
                 on  : temp.splice(first,onScreen.length),
                 out : temp
             };        
         };
         
+        /**
+         * returns the min value of an array
+         */
         this.min = function(arr){
             return arr.sort((a,b)=>a>b)[0];
         };
         
+        /**
+         * returns the max value of an array
+         */
         this.max = function(arr){
             return arr.sort((a,b)=>a<b)[0];
         };
         
+        /**
+         * scrolls to given px
+         */
         this.goTo = function(topx){
             $('html,body').stop().animate({scrollTop:topx}, 500, 'swing');
         };
         
+        /**
+         * debugging function
+         */
         this.log = function(...opt){
             var str = '';
             for(let i of opt){
@@ -161,6 +178,9 @@ addJQuery();
             $('#log').text(str);
         };
         
+        /**
+         * initialize the code
+         */
         this.init();
         
         return this;
