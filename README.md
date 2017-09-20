@@ -1,8 +1,9 @@
-/**
+
  * jQuery plugin - Creates a Navbar on the given position
  * and highlights current elements on scroll.
- */
 
- Usage:
 
+<b>Usage:</b>
+<code>
         $('CSS_SELECTOR').onme(options?);
+</code>
