@@ -2,6 +2,7 @@
 * @author Mücahid Dayan
 */
 
+addJQuery();
 (function($){
     $.fn.onme = function(options){
         var defaults = {
@@ -112,7 +113,7 @@
             console.log(on,out);
             $.each(on,function(){$(this).addClass('active')});
             $.each(out,function(){$(this).removeClass('active')});
-        }
+        };
         
         this.getOnScreen = function(scrollY){
             let temp = [].slice.call(items);        
@@ -134,15 +135,15 @@
                 on  : temp.splice(first,onScreen.length),
                 out : temp
             };        
-        }
+        };
         
         this.min = function(arr){
             return arr.sort((a,b)=>a>b)[0];
-        }
+        };
         
         this.max = function(arr){
             return arr.sort((a,b)=>a<b)[0];
-        }
+        };
         
         this.goTo = function(topx){
             $('html,body').stop().animate({scrollTop:topx}, 500, 'swing');
@@ -168,12 +169,15 @@ function addJQuery(){
         let jQuery = document.createElement('script');
         jQuery.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js';
         jQuery.type = 'text/javascript';
-        head.appendChild(jQuery);
+        try{
+            head.appendChild(jQuery);
+            return true;
+        }catch(e){
+            console.log(e);
+            return false;
+        }
     }else{
         console.info('Good to know that you use jQuery');
+        return true;
     }
 }
-
-document.addEventListener('DOMContentLoaded',()=>{
-    addJQuery();
-});
