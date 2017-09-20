@@ -52,6 +52,10 @@ addJQuery();
                 else if(/data/i.test(settings.label.selector)){
                     var data = settings.label.split(/\-(.+)/);
                     label = this.dataset[data[1]];
+                }else if(settings.label.selector.replace(/\s/,'') == ''){
+                    label = this.id;
+                }else if(/^self$/.test(settings.label.selector)){
+                    this.innerText;
                 }
                 else{
                     label = $(this).find(settings.label.selector).text();
