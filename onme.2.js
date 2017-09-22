@@ -102,12 +102,13 @@ var objectCounter__ = 0;
         var addToWrapper = function(){
             if($wrapper_){
                 $.each(navs_,function(ind,el){
+                    let elSelector = el.selector.replace(/\s/ig,'');
                     console.log(el.selector);
-                    if($wrapper_.find(el.selector).length){
-                        el.remove();
+                    if($wrapper_.find(elSelector).length){
+                        $(elSelector).remove();
                         console.log('removed');
                     }
-                    $wrapper_.append(el);
+                    $wrapper_.append(el.html);
                     console.log('added');
                 });
             }else{
@@ -115,14 +116,23 @@ var objectCounter__ = 0;
             }
             provideClick();     
         }
+
+        /**
+         * 
+         * @param {string} str 
+         * @param {string} tag 
+         */
+        var getSelectorFromHTMLString = function(str,tag){
+            return str.replace(new RegExp(`<${tag}([^>])class="([^"]*)"([^>])id="([^"]+)".*`,'ig'),'.$2#$4').replace(/\s/,'');            
+        }
         
         /**
-        * removes every non-alphanumeric character from given str
-        * so it can be used in HTML Attributes
-        * @param {string} str 
-        */
+         * removes every non-alphanumeric character from given str
+         * so it can be used in HTML Attributes
+         * @param {string} str 
+         */
         var selectorToStr = function(str){
-            return str.replace(/[#|.]/ig,' ');
+            return str.replace(/[#|.]/ig,' ')/* .replace(/\s\b/,'') */;
         }
         
         /**
@@ -195,7 +205,7 @@ var objectCounter__ = 0;
         * @returns {string} html string
         */    
         var createNavItems = function(elementsSelector,labelSelector){
-            let str = `<ul class="nav-item-box" id="${selectorToStr(elementsSelector)}">`;
+            let str = `<ul class="nav-item-box" id="${selectorToStr(elementsSelector).replace(/s/gi,'')}">`;
             $.each(items_,function(ind,el){
                 if(!$(el).html().length){return;} // ifthe item element has no content
                 let label = getLabel(labelSelector,el);
@@ -206,7 +216,7 @@ var objectCounter__ = 0;
                 positions_.push(position);
             });
             str += '</ul>';            
-            return str;
+            return {html:str,selector:`.nav-item-box#${selectorToStr(elementsSelector)}`};
         }
         
         
